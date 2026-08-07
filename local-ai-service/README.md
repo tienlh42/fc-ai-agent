@@ -4,6 +4,10 @@ REST API chạy trên Windows, dùng Qwen qua Ollama và LlamaIndex. Service có
 tool registry cố định, validation bằng JSON Schema và vòng function-calling có
 giới hạn. MVP không có RAG, vector database, streaming hay lưu lịch sử.
 
+Model Django của nghiệp vụ feedback được lưu tại
+`docs/reference/feedback_models.py` để làm nguồn tham chiếu khi tạo hoặc cập
+nhật JSON Schema cho feedback tool. File này không được import vào runtime.
+
 ## Cấu trúc
 
 ```text
@@ -116,7 +120,7 @@ pytest -q
 
 ## Function-calling loop
 
-Model nhận system prompt cùng allow-list schema của ba tool. Mỗi lượt model chỉ
+Model nhận system prompt cùng allow-list schema của bốn tool. Mỗi lượt model chỉ
 được trả JSON `tool_call` hoặc `final_answer`. Với `tool_call`, service kiểm tra
 tên, validate arguments, chạy handler rồi thêm kết quả vào context cho lượt kế
 tiếp. Loop dừng khi có câu trả lời cuối, đạt `MAX_TOOL_ROUNDS`, hoặc cùng tool và
@@ -127,6 +131,11 @@ Các endpoint external được cố định trong handler:
 - `search_students`: `GET /api/students`
 - `get_student_detail`: `GET /api/students/{student_number}`
 - `create_feedback_ticket`: `POST /api/feedback/tickets`
+- `get_feedback_list`: `GET /feedback/api/feedback/list`, hỗ trợ lọc theo
+  `title`, `description`, `priority` (`low`, `medium`, `high`), `reason_id`,
+  `guardian_id`, `student_id`, `campus_id`, `feedback_status` (`new`, `review`,
+  `processing`, `verified`, `close-ticket`) và `source`. Tất cả bộ lọc đều
+  không bắt buộc.
 
 ## Lỗi thường gặp
 
@@ -135,7 +144,7 @@ Các endpoint external được cố định trong handler:
 - Health trả `degraded`: Ollama không phản hồi; cấu hình external API không được
   gọi thật trong health check.
 - External API trả 401/403: kiểm tra key và tên header `Api-Key`.
-- External API trả 404: xác minh backend thực tế hỗ trợ đúng ba endpoint cố định.
+- External API trả 404: xác minh backend thực tế hỗ trợ đúng bốn endpoint cố định.
 - Timeout external API: backend chưa chạy, sai host/port hoặc tăng
   `EXTERNAL_API_TIMEOUT` nếu backend phản hồi chậm.
 - Model response parse error: model không tuân thủ JSON; giữ temperature thấp và

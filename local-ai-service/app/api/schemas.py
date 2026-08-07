@@ -2,11 +2,35 @@
 
 from typing import Any
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 
 class ChatRequest(BaseModel):
     message: str = Field(max_length=5000)
+
+    @model_validator(mode="before")
+    @classmethod
+    def normalize_message_payload(cls, value: Any) -> Any:
+        if isinstance(value, str):
+            return {"message": value}
+        if not isinstance(value, dict) or "message" in value:
+            return value
+
+        for key in ("prompt", "query", "input"):
+            if isinstance(value.get(key), str):
+                return {**value, "message": value[key]}
+
+        messages = value.get("messages")
+        if isinstance(messages, list):
+            for item in reversed(messages):
+                if (
+                    isinstance(item, dict)
+                    and item.get("role") == "user"
+                    and isinstance(item.get("content"), str)
+                ):
+                    return {**value, "message": item["content"]}
+
+        return value
 
     @field_validator("message")
     @classmethod

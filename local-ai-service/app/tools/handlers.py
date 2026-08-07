@@ -39,3 +39,32 @@ def create_feedback_ticket(
             "description": description,
         },
     )
+
+
+def get_feedback_list(
+    title: str | None = None,
+    description: str | None = None,
+    priority: str | None = None,
+    reason_id: int | None = None,
+    guardian_id: int | None = None,
+    student_id: int | None = None,
+    campus_id: int | None = None,
+    feedback_status: str | None = None,
+    source: str | None = None,
+) -> dict[str, Any]:
+    params = {
+        key: value
+        for key, value in {
+            "title": title,
+            "description": description,
+            "priority": priority,
+            "reason_id": reason_id,
+            "guardian_id": guardian_id,
+            "student_id": student_id,
+            "campus_id": campus_id,
+            "feedback_status": feedback_status,
+            "source": source,
+        }.items()
+        if value is not None
+    }
+    return _client().get("/feedback/api/feedback/list", params=params)

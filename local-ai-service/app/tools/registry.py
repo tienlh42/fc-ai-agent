@@ -4,6 +4,7 @@ from app.core.exceptions import ToolNotFoundError
 from app.tools.definitions import RegisteredTool
 from app.tools.handlers import (
     create_feedback_ticket,
+    get_feedback_list,
     get_student_detail,
     search_students,
 )
@@ -62,6 +63,38 @@ TOOL_REGISTRY: dict[str, RegisteredTool] = {
             "additionalProperties": False,
         },
         handler=create_feedback_ticket,
+    ),
+    "get_feedback_list": RegisteredTool(
+        name="get_feedback_list",
+        description="Lấy danh sách phản hồi theo các điều kiện lọc.",
+        parameters={
+            "type": "object",
+            "properties": {
+                "title": {"type": "string", "maxLength": 200},
+                "description": {"type": "string"},
+                "priority": {
+                    "type": "string",
+                    "enum": ["low", "medium", "high"],
+                },
+                "reason_id": {"type": "integer"},
+                "guardian_id": {"type": "integer"},
+                "student_id": {"type": "integer"},
+                "campus_id": {"type": "integer"},
+                "feedback_status": {
+                    "type": "string",
+                    "enum": [
+                        "new",
+                        "review",
+                        "processing",
+                        "verified",
+                        "close-ticket",
+                    ],
+                },
+                "source": {"type": "string", "maxLength": 255},
+            },
+            "additionalProperties": False,
+        },
+        handler=get_feedback_list,
     ),
 }
 

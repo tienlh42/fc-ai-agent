@@ -8,7 +8,7 @@ from app.ai.response_parser import parse_model_response
 def test_get_existing_tool() -> None:
     assert get_tool("search_students").name == "search_students"
     assert has_tool("get_student_detail")
-    assert len(get_tool_schemas()) == 3
+    assert len(get_tool_schemas()) == 4
 
 
 def test_get_missing_tool_raises() -> None:

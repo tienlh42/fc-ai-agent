@@ -125,6 +125,33 @@ def test_chat_api_response_schema() -> None:
     assert response.json()["tool_calls"][0]["name"] == "search_students"
 
 
+@pytest.mark.parametrize(
+    ("payload", "expected_message"),
+    [
+        ({"prompt": "Tìm học sinh An"}, "Tìm học sinh An"),
+        ({"query": "Tìm học sinh Bình"}, "Tìm học sinh Bình"),
+        ({"input": "Tìm học sinh Chi"}, "Tìm học sinh Chi"),
+        (
+            {"messages": [{"role": "user", "content": "Tìm học sinh Dũng"}]},
+            "Tìm học sinh Dũng",
+        ),
+        ("Tìm học sinh Em", "Tìm học sinh Em"),
+    ],
+)
+def test_chat_api_accepts_common_payload_shapes(
+    payload: object, expected_message: str
+) -> None:
+    fake_agent = Mock()
+    fake_agent.chat.return_value = {"answer": "OK", "tool_calls": []}
+    app.dependency_overrides[get_agent_service] = lambda: fake_agent
+    try:
+        response = TestClient(app).post("/api/v1/chat", json=payload)
+    finally:
+        app.dependency_overrides.clear()
+    assert response.status_code == 200
+    fake_agent.chat.assert_called_once_with(expected_message)
+
+
 @pytest.mark.parametrize("message", ["", " " * 3, "x" * 5001])
 def test_chat_api_validates_message(message: str) -> None:
     app.dependency_overrides[get_agent_service] = lambda: Mock()
