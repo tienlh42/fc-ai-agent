@@ -1,0 +1,10 @@
+llama-index
+llama-index-llms-ollama
+requests
+python-dotenv
+fastapi
+uvicorn
+pydantic
+jsonschema
+pytest
+httpx
