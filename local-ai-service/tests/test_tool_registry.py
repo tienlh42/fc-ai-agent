@@ -29,6 +29,14 @@ def test_parser_markdown_json() -> None:
     assert result.tool_name == "search_students"
 
 
+def test_parser_extracts_json_after_model_reasoning() -> None:
+    result = parse_model_response(
+        '<think>Tôi cần trả lời ngắn gọn.</think>\n'
+        '{"action":"final_answer","answer":"Xin chào"}'
+    )
+    assert result.answer == "Xin chào"
+
+
 @pytest.mark.parametrize(
     "content",
     ["not-json", '{"answer":"missing action"}', "[]"],

@@ -26,4 +26,5 @@ def get_agent_service() -> AgentService:
         llm=get_llm(),
         tool_executor=get_tool_executor(),
         max_tool_rounds=settings.max_tool_rounds,
+        model_timeout=settings.ollama_request_timeout,
     )

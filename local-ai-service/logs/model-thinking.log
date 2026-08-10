@@ -1,0 +1,108 @@
+2026-08-10 13:29:41,974 INFO app.ai.agent_service Bắt đầu xử lý yêu cầu bằng model.
+2026-08-10 13:29:41,975 INFO app.ai.agent_service Gọi model (vòng 1/5).
+2026-08-10 13:29:41,975 INFO app.ai.agent_service Model=qwen3:4b đang xử lý vòng 1 (lần thử 1/3, 2 messages, timeout=120.0s).
+2026-08-10 13:30:51,266 INFO app.ai.agent_service Model=qwen3:4b hoàn tất vòng 1 lần thử 1 sau 69.29s.
+2026-08-10 13:30:51,267 INFO app.ai.agent_service Model chọn action=tool_call ở vòng 1.
+2026-08-10 13:30:51,267 INFO app.ai.agent_service Thực thi tool=get_feedback_list ở vòng 1 với arguments={'campus_id': 1, 'feedback_status': 'processing'}.
+2026-08-10 13:30:51,296 INFO app.ai.agent_service Tool=get_feedback_list hoàn tất ở vòng 1, success=True.
+2026-08-10 13:30:51,297 INFO app.ai.agent_service Gọi model (vòng 2/5).
+2026-08-10 13:30:51,297 INFO app.ai.agent_service Model=qwen3:4b đang xử lý vòng 2 (lần thử 1/3, 4 messages, timeout=120.0s).
+2026-08-10 13:32:40,521 INFO app.ai.agent_service Model=qwen3:4b hoàn tất vòng 2 lần thử 1 sau 109.22s.
+2026-08-10 13:32:40,521 ERROR app.ai.agent_service Không thể parse model response ở vòng 2: raw_response='Okay, let me try to figure out what\'s going on here. The user asked for a list of feedbacks with status "processing" and campus_id 1. I called the get_feedback_list tool with those parameters. But the response came back with an error: "An error occurred" with code 203.\n\nHmm, code 203 is usually a "Partial Content" response in HTTP, but in this context, maybe it\'s a custom error code from the system. The message says "An error occurred", so the tool didn\'t return the expected data.\n\nWait, the tool\'s parameters for get_feedback_list include campus_id as an integer. The user specified campus_id is 1, which is an integer, so that\'s correct. The feedback_status is "processing", which is in the enum ["new", "review", "processing", "verified", "close-ticket"], so that\'s valid too.\n\nBut the error message is generic. Maybe there\'s a problem with the API endpoint or the data structure. Since the tool response says "status": "error", I need to check if the parameters are correctly formatted. Wait'
+Traceback (most recent call last):
+  File "C:\fc-ai-agent\local-ai-service\app\ai\response_parser.py", line 25, in _decode_payload
+    return json.loads(text)
+           ~~~~~~~~~~^^^^^^
+  File "C:\Program Files\Lib\json\__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "C:\Program Files\Lib\json\decoder.py", line 345, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Lib\json\decoder.py", line 363, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\fc-ai-agent\local-ai-service\app\ai\agent_service.py", line 154, in chat
+    decision = parse_model_response(raw_response)
+  File "C:\fc-ai-agent\local-ai-service\app\ai\response_parser.py", line 48, in parse_model_response
+    payload = _decode_payload(text)
+  File "C:\fc-ai-agent\local-ai-service\app\ai\response_parser.py", line 38, in _decode_payload
+    raise ModelResponseParseError() from original_error
+app.core.exceptions.ModelResponseParseError: Không thể đọc phản hồi từ mô hình.
+2026-08-10 13:36:11,189 WARNING app.ai.agent_service Model trả sai định dạng ở vòng 1 lần 1/2: raw_response='I need to think about this first.'
+2026-08-10 13:36:11,192 WARNING app.ai.agent_service Model vượt quá giới hạn 2 vòng tool call.
+2026-08-10 13:36:11,194 WARNING app.ai.agent_service Model lặp tool call quá giới hạn: tool=search_students arguments={'search': 'An'}.
+2026-08-10 13:36:35,776 WARNING app.ai.agent_service Model trả sai định dạng ở vòng 1 lần 1/2: raw_response='I need to think about this first.'
+2026-08-10 13:36:35,779 WARNING app.ai.agent_service Model vượt quá giới hạn 2 vòng tool call.
+2026-08-10 13:36:35,781 WARNING app.ai.agent_service Model lặp tool call quá giới hạn: tool=search_students arguments={'search': 'An'}.
+2026-08-10 13:37:27,991 INFO app.ai.agent_service Bắt đầu xử lý yêu cầu bằng model.
+2026-08-10 13:37:27,991 INFO app.ai.agent_service Gọi model (vòng 1/5).
+2026-08-10 13:37:27,991 INFO app.ai.agent_service Model=qwen3:4b đang xử lý vòng 1 (lần thử 1/3, 2 messages, timeout=120.0s).
+2026-08-10 13:38:32,247 INFO app.ai.agent_service Model=qwen3:4b hoàn tất vòng 1 lần thử 1 sau 64.26s.
+2026-08-10 13:38:32,248 INFO app.ai.agent_service Model chọn action=tool_call ở vòng 1.
+2026-08-10 13:38:32,248 INFO app.ai.agent_service Thực thi tool=get_feedback_list ở vòng 1 với arguments={'feedback_status': 'processing', 'campus_id': 1}.
+2026-08-10 13:38:32,266 INFO app.ai.agent_service Tool=get_feedback_list hoàn tất ở vòng 1, success=True.
+2026-08-10 13:38:32,266 INFO app.ai.agent_service Gọi model (vòng 2/5).
+2026-08-10 13:38:32,267 INFO app.ai.agent_service Model=qwen3:4b đang xử lý vòng 2 (lần thử 1/3, 4 messages, timeout=120.0s).
+2026-08-10 13:38:54,847 INFO app.ai.agent_service Model=qwen3:4b hoàn tất vòng 2 lần thử 1 sau 22.58s.
+2026-08-10 13:38:54,847 WARNING app.ai.agent_service Model trả sai định dạng ở vòng 2 lần 1/2: raw_response='{\n  "success": true,\n  "tool_name": "get_feedback_list",\n  "data": {\n    "status": "error",\n    "code": 203,\n    "message": "An error occurred",\n    "data": null\n  }\n}'
+2026-08-10 13:38:54,848 INFO app.ai.agent_service Model=qwen3:4b đang xử lý vòng 2 (lần thử 1/3, 5 messages, timeout=120.0s).
+2026-08-10 13:39:06,618 INFO app.ai.agent_service Model=qwen3:4b hoàn tất vòng 2 lần thử 1 sau 11.77s.
+2026-08-10 13:39:06,618 INFO app.ai.agent_service Model chọn action=final_answer ở vòng 2.
+2026-08-10 13:39:06,619 INFO app.ai.agent_service Model hoàn tất sau 2 vòng với 1 tool call.
+2026-08-10 13:51:03,209 INFO app.ai.agent_service Bắt đầu xử lý yêu cầu bằng model.
+2026-08-10 13:51:03,209 INFO app.ai.agent_service Gọi model (vòng 1/5).
+2026-08-10 13:51:03,209 INFO app.ai.agent_service Model=qwen3:4b đang xử lý vòng 1 (lần thử 1/3, 2 messages, timeout=120.0s).
+2026-08-10 13:51:11,714 INFO app.ai.agent_service Model=qwen3:4b hoàn tất vòng 1 lần thử 1 sau 8.50s.
+2026-08-10 13:51:11,714 INFO app.ai.agent_service Model chọn action=tool_call ở vòng 1.
+2026-08-10 13:51:11,714 INFO app.ai.agent_service Thực thi tool=get_feedback_list ở vòng 1 với arguments={'feedback_status': 'processing', 'campus_id': 1}.
+2026-08-10 13:51:11,907 INFO app.ai.agent_service Tool=get_feedback_list hoàn tất ở vòng 1, success=True.
+2026-08-10 13:51:11,907 INFO app.ai.agent_service Gọi model (vòng 2/5).
+2026-08-10 13:51:11,907 INFO app.ai.agent_service Model=qwen3:4b đang xử lý vòng 2 (lần thử 1/3, 4 messages, timeout=120.0s).
+2026-08-10 13:53:11,916 WARNING app.ai.agent_service Model=qwen3:4b bị timeout ở vòng 2 lần thử 1/3 sau 120.01s.
+2026-08-10 13:53:11,917 INFO app.ai.agent_service Model=qwen3:4b đang xử lý vòng 2 (lần thử 2/3, 4 messages, timeout=120.0s).
+2026-08-10 13:55:10,074 INFO app.ai.agent_service Model=qwen3:4b hoàn tất vòng 2 lần thử 2 sau 118.16s.
+2026-08-10 13:55:10,075 WARNING app.ai.agent_service Model trả sai định dạng ở vòng 2 lần 1/2: raw_response='{\n  "action": "final_answer",\n  "answer": "Danh sách phản hồi trạng thái đang xử lý và campus_id là 1:\\n\\n1. Tiêu đề: Bảo vệ 1\\n   Mô tả: ád\\n   Campus ID: 2\\n   Tạo ngày: 2026-01-13\\n\\n2. Tiêu đề: Test lop 8c\\n   Mô tả: test\\n   Campus ID: 2\\n   Tạo ngày: 2026-01-08\\n\\n3. Tiêu đề: Test Nusery\\n   Mô tả: Nguyễn Thị Ngọc Diễm\\n   Campus ID: 6\\n   Tạo ngày: 2026-01-05\\n\\n4. Tiêu đề: Hotline - Chương trình học (Feedback)\\n   Mô tả: Thông tin cụ thể như sau\\r\\nĐầu năm nhà trường có định hướng cho các con học chương trình tích hợp ở một số môn, nhưng trong quá trình các con học tập, chị quan sát thì thấy thời điểm gần đây đang chuyển đổi về chương trình, cụ thể là có tăng 1 số một số tiếng học bằng tiếng việt và chị thấy con chị học rất vất vả\\r\\nChị có tìm hiểu thì biết được thông từ hội Cha Mẹ Học Sinh của trường đã có cuộc họp với BGH nhà trường và chốt thông tin chuyển sang học chương trình song ngữ\\r\\n\\r\\nChị mong muốn:\\r\\nBGH và bộ phận chuyên môn của trường giải đáp các thắc mắc của '
+2026-08-10 13:55:10,075 INFO app.ai.agent_service Model=qwen3:4b đang xử lý vòng 2 (lần thử 1/3, 5 messages, timeout=120.0s).
+2026-08-10 13:55:55,794 INFO app.ai.agent_service Model=qwen3:4b hoàn tất vòng 2 lần thử 1 sau 45.72s.
+2026-08-10 13:55:55,794 INFO app.ai.agent_service Model chọn action=final_answer ở vòng 2.
+2026-08-10 13:55:55,794 INFO app.ai.agent_service Model hoàn tất sau 2 vòng với 1 tool call.
+2026-08-10 15:08:55,171 INFO app.ai.agent_service Bắt đầu xử lý yêu cầu bằng model.
+2026-08-10 15:08:55,172 INFO app.ai.agent_service Gọi model (vòng 1/5).
+2026-08-10 15:08:55,172 INFO app.ai.agent_service Model=qwen3:4b đang xử lý vòng 1 (lần thử 1/3, 2 messages, timeout=120.0s).
+2026-08-10 15:10:26,546 INFO app.ai.agent_service Model=qwen3:4b hoàn tất vòng 1 lần thử 1 sau 91.37s.
+2026-08-10 15:10:26,547 INFO app.ai.agent_service Model chọn action=tool_call ở vòng 1.
+2026-08-10 15:10:26,547 INFO app.ai.agent_service Thực thi tool=get_feedback_list ở vòng 1 với arguments={'feedback_status': 'processing', 'campus_id': 1}.
+2026-08-10 15:10:26,607 INFO app.ai.agent_service Tool=get_feedback_list hoàn tất ở vòng 1, success=False.
+2026-08-10 15:10:26,607 INFO app.ai.agent_service Gọi model (vòng 2/5).
+2026-08-10 15:10:26,608 INFO app.ai.agent_service Model=qwen3:4b đang xử lý vòng 2 (lần thử 1/3, 4 messages, timeout=120.0s).
+2026-08-10 15:10:45,427 INFO app.ai.agent_service Model=qwen3:4b hoàn tất vòng 2 lần thử 1 sau 18.82s.
+2026-08-10 15:10:45,428 WARNING app.ai.agent_service Model trả sai định dạng ở vòng 2 lần 1/2: raw_response='{\n  "success": false,\n  "tool_name": "get_feedback_list",\n  "error_code": "EXTERNAL_API_ERROR",\n  "message": "Không tìm thấy tài nguyên."\n}'
+2026-08-10 15:10:45,428 INFO app.ai.agent_service Model=qwen3:4b đang xử lý vòng 2 (lần thử 1/3, 5 messages, timeout=120.0s).
+2026-08-10 15:10:57,257 INFO app.ai.agent_service Model=qwen3:4b hoàn tất vòng 2 lần thử 1 sau 11.83s.
+2026-08-10 15:10:57,258 INFO app.ai.agent_service Model chọn action=final_answer ở vòng 2.
+2026-08-10 15:10:57,258 INFO app.ai.agent_service Model hoàn tất sau 2 vòng với 1 tool call.
+2026-08-10 15:11:16,905 INFO app.ai.agent_service Bắt đầu xử lý yêu cầu bằng model.
+2026-08-10 15:11:16,906 INFO app.ai.agent_service Gọi model (vòng 1/5).
+2026-08-10 15:11:16,906 INFO app.ai.agent_service Model=qwen3:4b đang xử lý vòng 1 (lần thử 1/3, 2 messages, timeout=120.0s).
+2026-08-10 15:11:25,300 INFO app.ai.agent_service Model=qwen3:4b hoàn tất vòng 1 lần thử 1 sau 8.39s.
+2026-08-10 15:11:25,300 INFO app.ai.agent_service Model chọn action=tool_call ở vòng 1.
+2026-08-10 15:11:25,300 INFO app.ai.agent_service Thực thi tool=get_feedback_list ở vòng 1 với arguments={'feedback_status': 'processing', 'campus_id': 1}.
+2026-08-10 15:11:25,469 INFO app.ai.agent_service Tool=get_feedback_list hoàn tất ở vòng 1, success=True.
+2026-08-10 15:11:25,469 INFO app.ai.agent_service Gọi model (vòng 2/5).
+2026-08-10 15:11:25,469 INFO app.ai.agent_service Model=qwen3:4b đang xử lý vòng 2 (lần thử 1/3, 4 messages, timeout=120.0s).
+2026-08-10 15:13:25,471 WARNING app.ai.agent_service Model=qwen3:4b bị timeout ở vòng 2 lần thử 1/3 sau 120.00s.
+2026-08-10 15:13:25,471 INFO app.ai.agent_service Model=qwen3:4b đang xử lý vòng 2 (lần thử 2/3, 4 messages, timeout=120.0s).
+2026-08-10 15:14:11,209 INFO app.ai.agent_service Model=qwen3:4b hoàn tất vòng 2 lần thử 2 sau 45.74s.
+2026-08-10 15:14:11,209 INFO app.ai.agent_service Model chọn action=final_answer ở vòng 2.
+2026-08-10 15:14:11,210 INFO app.ai.agent_service Model hoàn tất sau 2 vòng với 1 tool call.
+2026-08-10 15:22:14,809 INFO app.ai.agent_service Bắt đầu xử lý yêu cầu bằng model.
+2026-08-10 15:22:14,810 INFO app.ai.agent_service Gọi model (vòng 1/5).
+2026-08-10 15:22:14,810 INFO app.ai.agent_service Model=qwen3:4b đang xử lý vòng 1 (lần thử 1/3, 2 messages, timeout=120.0s).
+2026-08-10 15:22:22,842 INFO app.ai.agent_service Model=qwen3:4b hoàn tất vòng 1 lần thử 1 sau 8.03s.
+2026-08-10 15:22:22,843 INFO app.ai.agent_service Model chọn action=final_answer ở vòng 1.
+2026-08-10 15:22:22,843 INFO app.ai.agent_service Model hoàn tất sau 1 vòng với 0 tool call.

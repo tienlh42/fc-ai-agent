@@ -20,6 +20,24 @@ class ModelDecision:
 _FENCE = re.compile(r"^\s*```(?:json)?\s*(.*?)\s*```\s*$", re.DOTALL | re.IGNORECASE)
 
 
+def _decode_payload(text: str) -> Any:
+    try:
+        return json.loads(text)
+    except (json.JSONDecodeError, TypeError) as original_error:
+        decoder = json.JSONDecoder()
+        for match in re.finditer(r"\{", text):
+            try:
+                payload, _ = decoder.raw_decode(text, match.start())
+            except json.JSONDecodeError:
+                continue
+            if isinstance(payload, dict) and payload.get("action") in {
+                "tool_call",
+                "final_answer",
+            }:
+                return payload
+        raise ModelResponseParseError() from original_error
+
+
 def parse_model_response(content: str) -> ModelDecision:
     if not isinstance(content, str):
         raise ModelResponseParseError()
@@ -27,10 +45,7 @@ def parse_model_response(content: str) -> ModelDecision:
     match = _FENCE.match(text)
     if match:
         text = match.group(1).strip()
-    try:
-        payload = json.loads(text)
-    except (json.JSONDecodeError, TypeError) as exc:
-        raise ModelResponseParseError() from exc
+    payload = _decode_payload(text)
     if not isinstance(payload, dict):
         raise ModelResponseParseError()
 

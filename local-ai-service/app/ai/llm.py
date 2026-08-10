@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 CONTEXT_WINDOW = 8192
 NUM_THREADS = 12
 NUM_BATCH = 512
-MAX_OUTPUT_TOKENS = 512
+MAX_OUTPUT_TOKENS = 1024
 
 
 @lru_cache(maxsize=1)
@@ -43,6 +43,7 @@ def get_llm() -> Ollama:
             "num_predict": MAX_OUTPUT_TOKENS,
         },
         keep_alive="15m",
+        json_mode=True,
         thinking=False,
     )
 

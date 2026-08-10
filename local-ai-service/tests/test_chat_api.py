@@ -33,6 +33,26 @@ def test_loop_stops_on_final_answer() -> None:
     assert agent.chat("Chào") == {"answer": "Xin chào", "tool_calls": []}
 
 
+def test_loop_repairs_non_json_model_response_once() -> None:
+    seen: list = []
+    agent = AgentService(
+        llm=Mock(),
+        tool_executor=Mock(),
+        max_tool_rounds=5,
+        model_caller=sequence_caller(
+            [
+                "I need to think about this first.",
+                '{"action":"final_answer","answer":"Xin chào"}',
+            ],
+            seen,
+        ),
+    )
+
+    assert agent.chat("Chào") == {"answer": "Xin chào", "tool_calls": []}
+    assert seen[1][-1]["role"] == "user"
+    assert "Chỉ trả về đúng một JSON" in seen[1][-1]["content"]
+
+
 def test_loop_executes_tool_and_returns_result_to_model() -> None:
     executor = Mock()
     executor.execute.return_value = {
