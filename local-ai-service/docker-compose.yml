@@ -1,0 +1,73 @@
+services:
+  ollama:
+    image: ollama/ollama:latest
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  ollama-pull:
+    image: ollama/ollama:latest
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+    command: ["pull", "${OLLAMA_MODEL:-qwen3:4b}"]
+    depends_on:
+      ollama:
+        condition: service_healthy
+    volumes:
+      - ollama-data:/root/.ollama
+    restart: "no"
+
+  local-ai-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command:
+      - uvicorn
+      - app.main:app
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8010"
+      - --reload
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-8010}:8010"
+    volumes:
+      - ./app:/app/app
+    environment:
+      APP_HOST: 0.0.0.0
+      APP_PORT: 8010
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      OLLAMA_BASE_URL: http://ollama:11434
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen3:4b}
+      OLLAMA_REQUEST_TIMEOUT: ${OLLAMA_REQUEST_TIMEOUT:-120}
+      OLLAMA_TEMPERATURE: ${OLLAMA_TEMPERATURE:-0.1}
+      MAX_TOOL_ROUNDS: ${MAX_TOOL_ROUNDS:-5}
+      EXTERNAL_API_BASE_URL: ${DOCKER_EXTERNAL_API_BASE_URL:-http://host.docker.internal:8080/}
+      EXTERNAL_API_KEY: ${EXTERNAL_API_KEY:-replace-with-your-api-key}
+      EXTERNAL_API_KEY_HEADER: ${EXTERNAL_API_KEY_HEADER:-Api-Key}
+      EXTERNAL_API_TIMEOUT: ${EXTERNAL_API_TIMEOUT:-15}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      ollama-pull:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8010/health', timeout=5)"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  ollama-data:

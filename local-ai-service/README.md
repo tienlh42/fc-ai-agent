@@ -52,6 +52,23 @@ tham số tool, URL hay log.
 
 ## Chạy
 
+Chạy toàn bộ API và Ollama bằng Docker Compose (lần đầu sẽ tự tải model):
+
+```powershell
+Copy-Item .env.example .env
+# Cập nhật EXTERNAL_API_BASE_URL và EXTERNAL_API_KEY trong .env
+docker compose up --build -d
+docker compose logs -f ollama-pull local-ai-service
+```
+
+Model được lưu trong volume `ollama-data`. API gọi Ollama bằng địa chỉ nội bộ
+`http://ollama:11434` và được truy cập từ máy host tại
+`http://127.0.0.1:8010`. Khi backend chạy trên máy host, Compose sử dụng
+`DOCKER_EXTERNAL_API_BASE_URL=http://host.docker.internal:8080/`; biến
+`EXTERNAL_API_BASE_URL` vẫn dành cho trường hợp chạy service trực tiếp. Thư mục
+`app/` được bind-mount vào container và Uvicorn chạy với `--reload`, nên thay đổi
+source code trên máy host được tự động nạp lại mà không cần build image.
+
 Chạy trực tiếp từ Windows Terminal:
 
 ```powershell
