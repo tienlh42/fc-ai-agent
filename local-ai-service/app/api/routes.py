@@ -1,7 +1,10 @@
 """Local AI REST endpoints."""
 
+import json
+
 import requests
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, File, Form, UploadFile
+from fastapi.responses import FileResponse
 
 from app.ai.agent_service import AgentService
 from app.api.schemas import (
@@ -10,11 +13,14 @@ from app.api.schemas import (
     HealthResponse,
     RagIngestRequest,
     RagIngestResponse,
+    RagFileIngestResponse,
     RagQueryRequest,
     RagQueryResponse,
 )
 from app.config import Settings, get_settings
-from app.dependencies import get_agent_service, get_rag_service
+from app.core.exceptions import DocumentFileError
+from app.dependencies import get_agent_service, get_document_storage, get_rag_service
+from app.rag.document_storage import DocumentStorage
 from app.rag.rag_service import RagService
 
 router = APIRouter()
@@ -61,6 +67,53 @@ def rag_ingest(
         for document in request.documents
     )
     return RagIngestResponse(documents=len(request.documents), chunks=chunks)
+
+
+@router.post("/rag/ingest/file", response_model=RagFileIngestResponse)
+def rag_ingest_file(
+    file: UploadFile = File(...),
+    document_id: str | None = Form(default=None),
+    metadata: str | None = Form(default=None),
+    rag: RagService = Depends(get_rag_service),
+    storage: DocumentStorage = Depends(get_document_storage),
+) -> RagFileIngestResponse:
+    try:
+        parsed_metadata = json.loads(metadata) if metadata else {}
+    except json.JSONDecodeError as exc:
+        raise DocumentFileError("metadata phải là JSON hợp lệ.") from exc
+    if not isinstance(parsed_metadata, dict):
+        raise DocumentFileError("metadata phải là một JSON object.")
+
+    stored = storage.save_and_extract(
+        stream=file.file,
+        original_filename=file.filename or "",
+        document_id=document_id,
+    )
+    chunk_metadata = {
+        **parsed_metadata,
+        "filename": stored["original_filename"],
+        "content_type": stored["content_type"],
+    }
+    chunks = rag.ingest(stored["document_id"], stored["text"], chunk_metadata)
+    return RagFileIngestResponse(
+        document_id=stored["document_id"],
+        filename=stored["original_filename"],
+        size=stored["size"],
+        chunks=chunks,
+    )
+
+
+@router.get("/rag/documents/{document_id}/file")
+def rag_document_file(
+    document_id: str,
+    storage: DocumentStorage = Depends(get_document_storage),
+) -> FileResponse:
+    stored = storage.get(document_id)
+    return FileResponse(
+        path=stored["path"],
+        filename=stored["original_filename"],
+        media_type=stored["content_type"],
+    )
 
 
 @router.post("/rag/query", response_model=RagQueryResponse)

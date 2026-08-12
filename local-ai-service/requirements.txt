@@ -9,3 +9,6 @@ jsonschema
 pytest
 httpx
 chromadb>=1.0,<2.0
+python-multipart
+pypdf
+python-docx

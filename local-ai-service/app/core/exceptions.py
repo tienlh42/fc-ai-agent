@@ -63,3 +63,16 @@ class VectorStoreError(LocalAIError):
     error_code = "VECTOR_STORE_ERROR"
     default_message = "Không thể kết nối tới ChromaDB."
     status_code = 503
+
+
+class DocumentFileError(LocalAIError):
+    error_code = "DOCUMENT_FILE_ERROR"
+    default_message = "Không thể xử lý file tài liệu."
+    status_code = 400
+
+    def __init__(
+        self, message: str | None = None, status_code: int | None = None
+    ) -> None:
+        super().__init__(message)
+        if status_code is not None:
+            self.status_code = status_code

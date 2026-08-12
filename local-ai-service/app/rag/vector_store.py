@@ -71,6 +71,12 @@ class VectorStore:
             for index, chunk_id in enumerate(ids)
         ]
 
+    def delete_document(self, document_id: str) -> None:
+        try:
+            self._collection.delete(where={"document_id": document_id})
+        except Exception as exc:
+            raise VectorStoreError("Không thể xóa tài liệu khỏi ChromaDB.") from exc
+
     @staticmethod
     def _normalize_metadata(metadata: dict[str, Any]) -> dict[str, Any]:
         normalized: dict[str, Any] = {}

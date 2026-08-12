@@ -45,6 +45,8 @@ class Settings:
     rag_chunk_size: int = 1000
     rag_chunk_overlap: int = 150
     rag_max_output_tokens: int = 256
+    document_storage_dir: str = "/data/documents"
+    document_max_file_size_mb: int = 20
 
     @classmethod
     def from_env(cls) -> "Settings":
@@ -71,6 +73,10 @@ class Settings:
             rag_chunk_size=_read_int("RAG_CHUNK_SIZE", 1000),
             rag_chunk_overlap=_read_int("RAG_CHUNK_OVERLAP", 150),
             rag_max_output_tokens=_read_int("RAG_MAX_OUTPUT_TOKENS", 256),
+            document_storage_dir=os.getenv(
+                "DOCUMENT_STORAGE_DIR", "/data/documents"
+            ).strip(),
+            document_max_file_size_mb=_read_int("DOCUMENT_MAX_FILE_SIZE_MB", 20),
             max_tool_rounds=_read_int("MAX_TOOL_ROUNDS", 5),
             external_api_base_url=os.getenv("EXTERNAL_API_BASE_URL", "").strip(),
             external_api_key=os.getenv("EXTERNAL_API_KEY", "").strip(),
@@ -109,6 +115,10 @@ class Settings:
             raise ValueError("RAG_CHUNK_OVERLAP phải nhỏ hơn RAG_CHUNK_SIZE.")
         if not 1 <= self.rag_max_output_tokens <= 2048:
             raise ValueError("RAG_MAX_OUTPUT_TOKENS phải nằm trong khoảng 1 đến 2048.")
+        if not self.document_storage_dir:
+            raise ValueError("DOCUMENT_STORAGE_DIR không được rỗng.")
+        if not 1 <= self.document_max_file_size_mb <= 200:
+            raise ValueError("DOCUMENT_MAX_FILE_SIZE_MB phải từ 1 đến 200.")
         if not self.external_api_base_url:
             raise ValueError("EXTERNAL_API_BASE_URL không được rỗng.")
         if not self.external_api_key:

@@ -7,6 +7,7 @@ from app.ai.llm import get_llm
 from app.clients.external_api_client import ExternalAPIClient
 from app.config import get_settings
 from app.rag.embedding_service import EmbeddingService
+from app.rag.document_storage import DocumentStorage
 from app.rag.rag_service import RagService
 from app.rag.retriever import Retriever
 from app.rag.vector_store import VectorStore
@@ -78,4 +79,13 @@ def get_rag_service() -> RagService:
         chunk_size=settings.rag_chunk_size,
         chunk_overlap=settings.rag_chunk_overlap,
         max_output_tokens=settings.rag_max_output_tokens,
+    )
+
+
+@lru_cache(maxsize=1)
+def get_document_storage() -> DocumentStorage:
+    settings = get_settings()
+    return DocumentStorage(
+        storage_dir=settings.document_storage_dir,
+        max_file_size=settings.document_max_file_size_mb * 1024 * 1024,
     )

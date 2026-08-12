@@ -81,6 +81,24 @@ curl.exe -X POST http://127.0.0.1:8010/rag/ingest `
   -d '{"documents":[{"document_id":"handbook-1","text":"Nội dung tài liệu...","metadata":{"title":"Sổ tay"}}]}'
 ```
 
+Ingest bằng file (`.txt`, `.md`, `.pdf`, `.docx`):
+
+```powershell
+curl.exe -X POST http://127.0.0.1:8010/rag/ingest/file `
+  -F "file=@C:\docs\quy-trinh.pdf" `
+  -F "document_id=quy-trinh-nghi-phep" `
+  -F 'metadata={"title":"Quy trình nghỉ phép"}'
+```
+
+File gốc được lưu bền vững trong Docker volume `document-data`. Có thể tải lại
+file đã lưu bằng `document_id`:
+
+```powershell
+curl.exe -OJ http://127.0.0.1:8010/rag/documents/quy-trinh-nghi-phep/file
+```
+
+Upload lại cùng `document_id` sẽ thay thế file gốc và các chunk vector cũ.
+
 Query RAG (mặc định `top_k=5`):
 
 ```powershell

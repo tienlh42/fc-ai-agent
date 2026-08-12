@@ -82,6 +82,14 @@ class RagIngestResponse(BaseModel):
     chunks: int
 
 
+class RagFileIngestResponse(BaseModel):
+    success: bool = True
+    document_id: str
+    filename: str
+    size: int
+    chunks: int
+
+
 class RagQueryRequest(BaseModel):
     question: str = Field(min_length=1, max_length=5000)
     top_k: int = Field(default=5, ge=1, le=20)

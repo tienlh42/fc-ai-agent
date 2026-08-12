@@ -1,9 +1,11 @@
+from io import BytesIO
 from unittest.mock import Mock
 
 from fastapi.testclient import TestClient
 
-from app.dependencies import get_rag_service
+from app.dependencies import get_document_storage, get_rag_service
 from app.main import app
+from app.rag.document_storage import DocumentStorage
 from app.rag.rag_service import RagService
 
 
@@ -83,3 +85,44 @@ def test_rag_query_api_defaults_to_top_five() -> None:
 
     assert response.status_code == 200
     rag.query.assert_called_once_with("Quy trình là gì?", 5)
+
+
+def test_document_storage_saves_extracts_and_reads_text_file(tmp_path) -> None:
+    storage = DocumentStorage(str(tmp_path), max_file_size=1024)
+
+    stored = storage.save_and_extract(
+        BytesIO("Quy trình nghỉ phép".encode("utf-8")),
+        "quy-trinh.txt",
+        "leave-policy",
+    )
+
+    assert stored["text"] == "Quy trình nghỉ phép"
+    assert stored["document_id"] == "leave-policy"
+    loaded = storage.get("leave-policy")
+    assert loaded["original_filename"] == "quy-trinh.txt"
+    assert open(loaded["path"], "rb").read() == "Quy trình nghỉ phép".encode("utf-8")
+
+
+def test_rag_file_ingest_api_stores_and_indexes_file(tmp_path) -> None:
+    storage = DocumentStorage(str(tmp_path), max_file_size=1024)
+    rag = Mock()
+    rag.ingest.return_value = 1
+    app.dependency_overrides[get_document_storage] = lambda: storage
+    app.dependency_overrides[get_rag_service] = lambda: rag
+    try:
+        response = TestClient(app).post(
+            "/rag/ingest/file",
+            files={"file": ("policy.txt", "Nghỉ phép trước ba ngày.", "text/plain")},
+            data={
+                "document_id": "policy-1",
+                "metadata": '{"title":"Quy trình nghỉ phép"}',
+            },
+        )
+    finally:
+        app.dependency_overrides.clear()
+
+    assert response.status_code == 200
+    assert response.json()["document_id"] == "policy-1"
+    rag.ingest.assert_called_once()
+    assert rag.ingest.call_args.args[0] == "policy-1"
+    assert rag.ingest.call_args.args[2]["filename"] == "policy.txt"
