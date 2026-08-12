@@ -37,6 +37,14 @@ class Settings:
     external_api_key: str
     external_api_key_header: str
     external_api_timeout: float
+    embedding_model: str = "embeddinggemma"
+    chroma_host: str = "127.0.0.1"
+    chroma_port: int = 8000
+    chroma_collection: str = "local_documents"
+    rag_top_k: int = 5
+    rag_chunk_size: int = 1000
+    rag_chunk_overlap: int = 150
+    rag_max_output_tokens: int = 256
 
     @classmethod
     def from_env(cls) -> "Settings":
@@ -51,6 +59,18 @@ class Settings:
             ollama_model=os.getenv("OLLAMA_MODEL", "qwen3:8b").strip(),
             ollama_request_timeout=_read_float("OLLAMA_REQUEST_TIMEOUT", 120),
             ollama_temperature=_read_float("OLLAMA_TEMPERATURE", 0.1),
+            embedding_model=os.getenv(
+                "EMBEDDING_MODEL", "embeddinggemma"
+            ).strip(),
+            chroma_host=os.getenv("CHROMA_HOST", "127.0.0.1").strip(),
+            chroma_port=_read_int("CHROMA_PORT", 8000),
+            chroma_collection=os.getenv(
+                "CHROMA_COLLECTION", "local_documents"
+            ).strip(),
+            rag_top_k=_read_int("RAG_TOP_K", 5),
+            rag_chunk_size=_read_int("RAG_CHUNK_SIZE", 1000),
+            rag_chunk_overlap=_read_int("RAG_CHUNK_OVERLAP", 150),
+            rag_max_output_tokens=_read_int("RAG_MAX_OUTPUT_TOKENS", 256),
             max_tool_rounds=_read_int("MAX_TOOL_ROUNDS", 5),
             external_api_base_url=os.getenv("EXTERNAL_API_BASE_URL", "").strip(),
             external_api_key=os.getenv("EXTERNAL_API_KEY", "").strip(),
@@ -75,6 +95,20 @@ class Settings:
             raise ValueError("OLLAMA_BASE_URL không được rỗng.")
         if not self.ollama_model:
             raise ValueError("OLLAMA_MODEL không được rỗng.")
+        if not self.embedding_model:
+            raise ValueError("EMBEDDING_MODEL không được rỗng.")
+        if not self.chroma_host or not self.chroma_collection:
+            raise ValueError("Cấu hình ChromaDB không được rỗng.")
+        if not 1 <= self.chroma_port <= 65535:
+            raise ValueError("CHROMA_PORT phải nằm trong khoảng 1 đến 65535.")
+        if not 1 <= self.rag_top_k <= 20:
+            raise ValueError("RAG_TOP_K phải nằm trong khoảng 1 đến 20.")
+        if self.rag_chunk_size < 100:
+            raise ValueError("RAG_CHUNK_SIZE phải ít nhất là 100.")
+        if not 0 <= self.rag_chunk_overlap < self.rag_chunk_size:
+            raise ValueError("RAG_CHUNK_OVERLAP phải nhỏ hơn RAG_CHUNK_SIZE.")
+        if not 1 <= self.rag_max_output_tokens <= 2048:
+            raise ValueError("RAG_MAX_OUTPUT_TOKENS phải nằm trong khoảng 1 đến 2048.")
         if not self.external_api_base_url:
             raise ValueError("EXTERNAL_API_BASE_URL không được rỗng.")
         if not self.external_api_key:

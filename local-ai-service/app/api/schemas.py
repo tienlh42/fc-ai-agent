@@ -64,3 +64,37 @@ class HealthResponse(BaseModel):
     ollama: bool
     model: str
     external_api_configured: bool
+
+
+class RagDocument(BaseModel):
+    document_id: str = Field(min_length=1, max_length=200)
+    text: str = Field(min_length=1)
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class RagIngestRequest(BaseModel):
+    documents: list[RagDocument] = Field(min_length=1, max_length=100)
+
+
+class RagIngestResponse(BaseModel):
+    success: bool = True
+    documents: int
+    chunks: int
+
+
+class RagQueryRequest(BaseModel):
+    question: str = Field(min_length=1, max_length=5000)
+    top_k: int = Field(default=5, ge=1, le=20)
+
+
+class RagSource(BaseModel):
+    id: str
+    text: str
+    metadata: dict[str, Any]
+    distance: float
+
+
+class RagQueryResponse(BaseModel):
+    success: bool = True
+    answer: str
+    sources: list[RagSource]

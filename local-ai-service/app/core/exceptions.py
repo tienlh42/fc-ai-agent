@@ -57,3 +57,9 @@ class RepeatedToolCallError(LocalAIError):
     error_code = "REPEATED_TOOL_CALL"
     default_message = "Model đã yêu cầu lặp lại cùng một công cụ."
     status_code = 502
+
+
+class VectorStoreError(LocalAIError):
+    error_code = "VECTOR_STORE_ERROR"
+    default_message = "Không thể kết nối tới ChromaDB."
+    status_code = 503

@@ -4,9 +4,18 @@ import requests
 from fastapi import APIRouter, Depends
 
 from app.ai.agent_service import AgentService
-from app.api.schemas import ChatRequest, ChatResponse, HealthResponse
+from app.api.schemas import (
+    ChatRequest,
+    ChatResponse,
+    HealthResponse,
+    RagIngestRequest,
+    RagIngestResponse,
+    RagQueryRequest,
+    RagQueryResponse,
+)
 from app.config import Settings, get_settings
-from app.dependencies import get_agent_service
+from app.dependencies import get_agent_service, get_rag_service
+from app.rag.rag_service import RagService
 
 router = APIRouter()
 
@@ -40,3 +49,24 @@ def chat(
 ) -> ChatResponse:
     result = agent.chat(request.message)
     return ChatResponse(success=True, **result)
+
+
+@router.post("/rag/ingest", response_model=RagIngestResponse)
+def rag_ingest(
+    request: RagIngestRequest,
+    rag: RagService = Depends(get_rag_service),
+) -> RagIngestResponse:
+    chunks = sum(
+        rag.ingest(document.document_id, document.text, document.metadata)
+        for document in request.documents
+    )
+    return RagIngestResponse(documents=len(request.documents), chunks=chunks)
+
+
+@router.post("/rag/query", response_model=RagQueryResponse)
+def rag_query(
+    request: RagQueryRequest,
+    rag: RagService = Depends(get_rag_service),
+) -> RagQueryResponse:
+    result = rag.query(request.question, request.top_k)
+    return RagQueryResponse(success=True, **result)

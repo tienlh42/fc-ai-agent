@@ -69,6 +69,26 @@ Model được lưu trong volume `ollama-data`. API gọi Ollama bằng địa c
 `app/` được bind-mount vào container và Uvicorn chạy với `--reload`, nên thay đổi
 source code trên máy host được tự động nạp lại mà không cần build image.
 
+Compose cũng chạy ChromaDB tại service name `chroma` và tự tải hai model
+`embeddinggemma` (embedding) cùng `qwen3:4b` (chat). Dữ liệu vector được giữ
+trong volume `chroma-data`.
+
+Ingest tài liệu:
+
+```powershell
+curl.exe -X POST http://127.0.0.1:8010/rag/ingest `
+  -H "Content-Type: application/json" `
+  -d '{"documents":[{"document_id":"handbook-1","text":"Nội dung tài liệu...","metadata":{"title":"Sổ tay"}}]}'
+```
+
+Query RAG (mặc định `top_k=5`):
+
+```powershell
+curl.exe -X POST http://127.0.0.1:8010/rag/query `
+  -H "Content-Type: application/json" `
+  -d '{"question":"Tài liệu nói gì?"}'
+```
+
 Chạy trực tiếp từ Windows Terminal:
 
 ```powershell

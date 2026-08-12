@@ -12,7 +12,7 @@ services:
       timeout: 5s
       retries: 20
 
-  ollama-pull:
+  ollama-pull-chat:
     image: ollama/ollama:latest
     environment:
       OLLAMA_HOST: http://ollama:11434
@@ -23,6 +23,35 @@ services:
     volumes:
       - ollama-data:/root/.ollama
     restart: "no"
+
+  ollama-pull-embedding:
+    image: ollama/ollama:latest
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+    command: ["pull", "${EMBEDDING_MODEL:-embeddinggemma}"]
+    depends_on:
+      ollama:
+        condition: service_healthy
+    volumes:
+      - ollama-data:/root/.ollama
+    restart: "no"
+
+  chroma:
+    image: chromadb/chroma:latest
+    restart: unless-stopped
+    ports:
+      - "${CHROMA_PORT:-8000}:8000"
+    volumes:
+      - chroma-data:/data
+    healthcheck:
+      test:
+        - CMD
+        - /usr/bin/bash
+        - -c
+        - ": > /dev/tcp/127.0.0.1/8000"
+      interval: 5s
+      timeout: 5s
+      retries: 20
 
   local-ai-service:
     build:
@@ -47,9 +76,17 @@ services:
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
       OLLAMA_BASE_URL: http://ollama:11434
       OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen3:4b}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-embeddinggemma}
       OLLAMA_REQUEST_TIMEOUT: ${OLLAMA_REQUEST_TIMEOUT:-120}
       OLLAMA_TEMPERATURE: ${OLLAMA_TEMPERATURE:-0.1}
       MAX_TOOL_ROUNDS: ${MAX_TOOL_ROUNDS:-5}
+      CHROMA_HOST: chroma
+      CHROMA_PORT: 8000
+      CHROMA_COLLECTION: ${CHROMA_COLLECTION:-local_documents}
+      RAG_TOP_K: ${RAG_TOP_K:-5}
+      RAG_CHUNK_SIZE: ${RAG_CHUNK_SIZE:-1000}
+      RAG_CHUNK_OVERLAP: ${RAG_CHUNK_OVERLAP:-150}
+      RAG_MAX_OUTPUT_TOKENS: ${RAG_MAX_OUTPUT_TOKENS:-256}
       EXTERNAL_API_BASE_URL: ${DOCKER_EXTERNAL_API_BASE_URL:-http://host.docker.internal:8080/}
       EXTERNAL_API_KEY: ${EXTERNAL_API_KEY:-replace-with-your-api-key}
       EXTERNAL_API_KEY_HEADER: ${EXTERNAL_API_KEY_HEADER:-Api-Key}
@@ -57,8 +94,12 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
-      ollama-pull:
+      ollama-pull-chat:
         condition: service_completed_successfully
+      ollama-pull-embedding:
+        condition: service_completed_successfully
+      chroma:
+        condition: service_healthy
     healthcheck:
       test:
         - CMD
@@ -71,3 +112,4 @@ services:
 
 volumes:
   ollama-data:
+  chroma-data:
